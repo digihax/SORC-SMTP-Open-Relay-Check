@@ -16,7 +16,7 @@ will be either the same/Target domain, or an externa domain, to see which variat
 The sent emails will include the IP, Port, From, and To senders -- the SMTP server may send, but another device (FW?) may block. 
 This is common -- FW rules will limit who can send outbound SMTP, ideally.
 
-Several files will be created:
+Several files will be created:<br>
 $policyBlockedFile = "./IP-RelayBlockedByPolicy.txt" -- 5.7.1 SMTP server errors go here -- relay is denied by policy.<br>
 $timeoutFile = "./IP-SMTPPortOpen-Timeout.txt" - If a port tests as open, but the communication times out, it goes here<br>
 $internalSuccessFile = "./IP-SMTPEmailSentInternal.txt" - SMTP server gave no errors and processed the email send attempt - if it was received -- open relay.<br>
