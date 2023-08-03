@@ -17,12 +17,12 @@ The sent emails will include the IP, Port, From, and To senders -- the SMTP serv
 This is common -- FW rules will limit who can send outbound SMTP, ideally.
 
 Several files will be created:
-$policyBlockedFile = "./IP-RelayBlockedByPolicy.txt" -- 5.7.1 SMTP server errors go here -- relay is denied by policy.
-$timeoutFile = "./IP-SMTPPortOpen-Timeout.txt" - If a port tests as open, but the communication times out, it goes here
-$internalSuccessFile = "./IP-SMTPEmailSentInternal.txt" - SMTP server gave no errors and processed the email send attempt - if it was received -- open relay.
-$externalSuccessFile = "./IP-SMTPEmailSentExternal.txt" - SMTP server gave no errors and processed the email send attempt - if it was received -- open relay.
-$investigateFile = "./IP-SMTP-Investigate.txt" - Some other message was received -- review manually
-$closedPortFile = "./IP-SMTPPortClosed.txt" - The network connection test failed, the port appears closed.
-$RelayDeniedFile = "./IP=SMTPRelayDenied.txt" - 4.7.1 SMTP server errors go here - relay is denied
+$policyBlockedFile = "./IP-RelayBlockedByPolicy.txt" -- 5.7.1 SMTP server errors go here -- relay is denied by policy.<br>
+$timeoutFile = "./IP-SMTPPortOpen-Timeout.txt" - If a port tests as open, but the communication times out, it goes here<br>
+$internalSuccessFile = "./IP-SMTPEmailSentInternal.txt" - SMTP server gave no errors and processed the email send attempt - if it was received -- open relay.<br>
+$externalSuccessFile = "./IP-SMTPEmailSentExternal.txt" - SMTP server gave no errors and processed the email send attempt - if it was received -- open relay.<br>
+$investigateFile = "./IP-SMTP-Investigate.txt" - Some other message was received -- review manually<br>
+$closedPortFile = "./IP-SMTPPortClosed.txt" - The network connection test failed, the port appears closed.<br>
+$RelayDeniedFile = "./IP=SMTPRelayDenied.txt" - 4.7.1 SMTP server errors go here - relay is denied<br>
 
 That's it!  Enjoy
