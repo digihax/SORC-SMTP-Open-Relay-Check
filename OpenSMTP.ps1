@@ -28,8 +28,8 @@ $ports = 25, 8025
 $fromAddresses = "test@example.com", "FakeEmailAddress@gmail.com"
 
 # Calculate the total number of IP address, port, from address, and recipient combinations to test.
-$totalCombinations = $smtpServers.Count * $fromAddresses.Count * 2 * 2
-$totalCombinations += ($specialSmtpServers.Count * $ports.Count * $fromAddresses.Count * 2) - ($specialSmtpServers.Count * $fromAddresses.Count * 2)
+$totalCombinations = ($smtpServers.Count - $specialSmtpServers.Count) * $fromAddresses.Count * 2
+$totalCombinations += $specialSmtpServers.Count * $ports.Count * $fromAddresses.Count * 2
 
 # Loop through each IP address (server) in the file.
 foreach ($smtpServer in $smtpServers) {
