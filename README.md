@@ -1,4 +1,4 @@
-# OpenSMTPRelayCheck
+# SORC (SMTP Open Relay Check)
 Powershell script to test a list of IPs for misconfiguration
 
 Fairly straightforward, but a few worthy notes:
