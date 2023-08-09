@@ -1,6 +1,9 @@
-# Define email addresses for internal and external testing.
+# Define Recipient email addresses for internal and external testing.
 $internalRecipient = "You@TestedDomain.com"
 $externalRecipient = "Someone@ExternalDomain.com"
+
+# Define sender addresses to test - a legit email from target domain, possibly a random from the tested domain, and a valid @ExternalDomain are suggested.
+$fromAddresses = "test@example.com", "FakeEmailAddress@gmail.com"
 
 # Read the SMTP server information from "OpenSMTP.txt" and remove duplicates.
 $smtpServers = Get-Content -Path "OpenSMTP.txt" | Sort-Object | Get-Unique
@@ -23,9 +26,6 @@ $delay = 15
 # Define the special SMTP servers and the ports to test.  Port 25 is tested by default.  If you want another port tested for a subset of IPs, list here.
 $specialSmtpServers = "1.2.x.y, 3.4.x.y"
 $ports = 25, 8025
-
-# Define the "from" addresses to test - a legit email from tested domain, and a valid @ExternalDomain are suggested.
-$fromAddresses = "test@example.com", "FakeEmailAddress@gmail.com"
 
 # Calculate the total number of IP address, port, from address, and recipient combinations to test.
 $totalCombinations = ($smtpServers.Count - $specialSmtpServers.Count) * $fromAddresses.Count * 2
