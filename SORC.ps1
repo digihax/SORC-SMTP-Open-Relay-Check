@@ -15,7 +15,7 @@ $internalSuccessFile = "./IP-SMTPEmailSentInternal.txt"
 $externalSuccessFile = "./IP-SMTPEmailSentExternal.txt"
 $investigateFile = "./IP-SMTP-Investigate.txt"
 $closedPortFile = "./IP-SMTPPortClosed.txt"
-$RelayDeniedFile = "./IP=SMTPRelayDenied.txt"
+$RelayDeniedFile = "./IP-SMTPRelayDenied.txt"
 
 # Define a log file for error messages.
 $logFile = "./OpenSMTPLog.txt"
