@@ -27,12 +27,21 @@ $delay = 15
 $specialSmtpServers = "1.2.x.y, 3.4.x.y"
 $ports = 25, 8025
 
-# Calculate the total number of IP address, port, from address, and recipient combinations to test.
-$totalCombinations = ($smtpServers.Count - $specialSmtpServers.Count) * $fromAddresses.Count * 2
-$totalCombinations += $specialSmtpServers.Count * $ports.Count * $fromAddresses.Count * 2
+# Record the start time for testing
+$start_time = Get-Date -Format "hh:mmtt"
+
+# Initialize a counter to track the current number of processed IPs
+$current_ip_count = 0
+
+# Calculate the total number of IP addresses (servers) to test
+$total_ip_count = $smtpServers.Count
 
 # Loop through each IP address (server) in the file.
 foreach ($smtpServer in $smtpServers) {
+    # Increment the current IP counter and display the status line
+    $current_ip_count++
+    Write-Host ("Start: " + $start_time + ", Processing " + $current_ip_count + "th of " + $total_ip_count + " servers.") -ForegroundColor Magenta
+
     # Determine the ports to test based on the server IP.
     $portsToTest = if ($smtpServer -in $specialSmtpServers) { $ports } else { 25 }
 
