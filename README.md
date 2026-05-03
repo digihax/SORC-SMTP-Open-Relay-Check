@@ -1,28 +1,95 @@
-# SORC (SMTP Open Relay Check)
-Powershell script to test a list of IPs for misconfiguration
+# SORC - SMTP Open Relay Check
 
-Fairly straightforward, but a few worthy notes:
+SORC is a PowerShell script for checking whether SMTP servers may allow open relay behavior.
 
-A file, OpenSMTP.txt, with the IPs you want to check, is required.
+It reads a list of SMTP server IPs or hostnames, checks whether the target port is reachable, then attempts controlled SMTP sends using internal and external sender/recipient combinations. Results are written to separate output files so findings can be reviewed after the run.
 
-Set the $delay variable (in seconds -- 30 * 60 for 30m, for example) for the delay between IPs tested.
+## Intended Use
 
-The script tests the port to see if it accepts connections, before attempting to send the email.
+Use this only against systems you own or are explicitly authorized to test.
 
-Presuming you know the target domain (if not, set the from/to emails accordingly), each iteration
-will attempt 4 emails: 2 from the Sender/Target domain, 2 from an external domain, and the recipients 
-will be either the same/Target domain, or an externa domain, to see which variations may get through.
+The script is designed for defensive validation, red-team assessment, and configuration review of known SMTP infrastructure.
 
-The sent emails will include the IP, Port, From, and To senders -- the SMTP server may send, but another device (FW?) may block. 
-This is common -- FW rules will limit who can send outbound SMTP, ideally.
+## What It Tests
 
-Several files will be created:<br>
-$policyBlockedFile = "./IP-RelayBlockedByPolicy.txt" -- 5.7.1 SMTP server errors go here -- relay is denied by policy.<br>
-$timeoutFile = "./IP-SMTPPortOpen-Timeout.txt" - If a port tests as open, but the communication times out, it goes here<br>
-$internalSuccessFile = "./IP-SMTPEmailSentInternal.txt" - SMTP server gave no errors and processed the email send attempt - if it was received -- open relay.<br>
-$externalSuccessFile = "./IP-SMTPEmailSentExternal.txt" - SMTP server gave no errors and processed the email send attempt - if it was received -- open relay.<br>
-$investigateFile = "./IP-SMTP-Investigate.txt" - Some other message was received -- review manually<br>
-$closedPortFile = "./IP-SMTPPortClosed.txt" - The network connection test failed, the port appears closed.<br>
-$RelayDeniedFile = "./IP=SMTPRelayDenied.txt" - 4.7.1 SMTP server errors go here - relay is denied<br>
+For each server, SORC can test:
 
-That's it!  Enjoy
+- Internal sender to internal recipient
+- Internal sender to external recipient
+- External sender to internal recipient
+- External sender to external recipient
+
+The most important result is whether an external relay attempt is accepted by the SMTP server and actually reaches the recipient. Some environments accept the SMTP transaction but block delivery later with a gateway, filter, or firewall, so review mailboxes and logs too.
+
+## Requirements
+
+- Windows PowerShell
+- Network access to the target SMTP hosts
+- An `OpenSMTP.txt` file in the same folder as `SORC.ps1`
+- Authorization to test the listed SMTP servers
+
+## Configuration
+
+Edit the top of `SORC.ps1`:
+
+```powershell
+$internalRecipient = "You@TestedDomain.com"
+$externalRecipient = "Someone@ExternalDomain.com"
+$fromAddresses = "test@example.com", "FakeEmailAddress@gmail.com"
+$delay = 15
+$specialSmtpServers = @("1.2.x.y", "3.4.x.y")
+$ports = 25, 8025
+```
+
+- `internalRecipient`: Recipient at the domain you are testing.
+- `externalRecipient`: Recipient outside the tested domain.
+- `fromAddresses`: Sender addresses to test. Include at least one internal-looking sender and one external sender.
+- `delay`: Seconds to wait between tested servers when a port was open.
+- `specialSmtpServers`: Servers that should be tested on every port listed in `$ports`.
+- `ports`: Extra ports to test for special servers. Non-special servers use port `25`.
+
+## Input File
+
+Create `OpenSMTP.txt` next to the script.
+
+Example:
+
+```text
+192.0.2.10
+192.0.2.11
+mail.example.com
+```
+
+Blank lines are ignored and duplicates are removed.
+
+## Running
+
+Run from PowerShell:
+
+```powershell
+.\SORC.ps1
+```
+
+## Output Files
+
+The script writes results into files in the current folder:
+
+```text
+IP-RelayBlockedByPolicy.txt
+IP-SMTPPortOpen-Timeout.txt
+IP-SMTPEmailSentInternal.txt
+IP-SMTPEmailSentExternal.txt
+IP-SMTP-Investigate.txt
+IP-SMTPPortClosed.txt
+IP-SMTPRelayDenied.txt
+OpenSMTPLog.txt
+```
+
+Successful SMTP acceptance is not always proof of delivered mail. Confirm results by checking the destination mailboxes and server-side logs.
+
+## Notes And Cautions
+
+- Do not run this against third-party systems without permission.
+- Start with a small input file to verify your sender and recipient configuration.
+- Keep delays high enough to avoid generating unnecessary mail volume or triggering rate limits.
+- Review `IP-SMTP-Investigate.txt` and `OpenSMTPLog.txt` manually; not every SMTP server uses the same error wording.
