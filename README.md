@@ -1,6 +1,8 @@
 # SORC - SMTP Open Relay Check
 
-SORC is a PowerShell script for checking whether SMTP servers may allow open relay behavior.
+SORC is a focused PowerShell utility for reviewing SMTP relay acceptance on
+servers you are authorized to test. It sends real messages to configured recipients;
+it is not a passive port check.
 
 It reads a list of SMTP server IPs or hostnames, checks whether the target port is reachable, then attempts controlled SMTP sends using internal and external sender/recipient combinations. Results are written to separate output files so findings can be reviewed after the run.
 
@@ -25,7 +27,8 @@ The most important result is whether an external relay attempt is accepted by th
 
 - Windows PowerShell
 - Network access to the target SMTP hosts
-- An `OpenSMTP.txt` file in the same folder as `SORC.ps1`
+- An `OpenSMTP.txt` file in the current working directory
+- Internal/external recipient mailboxes you control
 - Authorization to test the listed SMTP servers
 
 ## Configuration
@@ -33,24 +36,27 @@ The most important result is whether an external relay attempt is accepted by th
 Edit the top of `SORC.ps1`:
 
 ```powershell
-$internalRecipient = "You@TestedDomain.com"
-$externalRecipient = "Someone@ExternalDomain.com"
-$fromAddresses = "test@example.com", "FakeEmailAddress@gmail.com"
+$internalRecipient = "relay-check@example.com"
+$externalRecipient = "relay-check@example.net"
+$fromAddresses = "sender@example.com", "sender@example.net"
 $delay = 15
-$specialSmtpServers = @("1.2.x.y", "3.4.x.y")
+$specialSmtpServers = @("192.0.2.10", "192.0.2.11")
 $ports = 25, 8025
 ```
 
 - `internalRecipient`: Recipient at the domain you are testing.
 - `externalRecipient`: Recipient outside the tested domain.
 - `fromAddresses`: Sender addresses to test. Include at least one internal-looking sender and one external sender.
-- `delay`: Seconds to wait between tested servers when a port was open.
+- `delay`: Seconds between server entries. Currently skipped if any tested port
+  for that server was closed, even if another was open.
 - `specialSmtpServers`: Servers that should be tested on every port listed in `$ports`.
 - `ports`: Extra ports to test for special servers. Non-special servers use port `25`.
 
 ## Input File
 
-Create `OpenSMTP.txt` next to the script.
+Run from the checkout and create `OpenSMTP.txt` there: it is read relative to the
+**working directory**, not `$PSScriptRoot`. There are no command-line parameters.
+Check that the file exists and replace all sender/recipient placeholders first.
 
 Example:
 
@@ -60,7 +66,8 @@ Example:
 mail.example.com
 ```
 
-Blank lines are ignored and duplicates are removed.
+Entries are trimmed, sorted and deduplicated; blank lines are ignored. Comments
+are not supported. Use one hostname/IP per line. The script enforces no IP allowlist.
 
 ## Running
 
@@ -85,7 +92,29 @@ IP-SMTPRelayDenied.txt
 OpenSMTPLog.txt
 ```
 
-Successful SMTP acceptance is not always proof of delivered mail. Confirm results by checking the destination mailboxes and server-side logs.
+Historical `EmailSent` filenames and `Success` fields mean `SmtpClient.Send`
+returned without an exception: **SMTP acceptance, not confirmed mailbox delivery**.
+Internal/external labels come from the configured recipient. Confirm destination
+mailboxes and server/gateway logs before calling a result an open relay.
+
+## Validation and limitations
+
+Default two senders times two recipients means four possible sends per reachable
+port. The progress counter tracks planned send combinations, not servers or ETA;
+closed-port combinations are subtracted without sending.
+
+This maintenance pass checks PowerShell syntax and offline input/counting fixtures
+under Windows PowerShell 5.1 and PowerShell 7. No live SMTP messages were sent.
+
+```powershell
+powershell -NoProfile -File .\tests\input_fixture.ps1
+```
+
+The script is Windows-oriented (`Test-NetConnection` and .NET `SmtpClient`). It
+does not configure SMTP AUTH or STARTTLS. Error classification depends on exception
+wording, not a complete SMTP status parser. `PortClosed` can also mean filtering
+or a transient failure. Input-file failure has no explicit fail-fast guard; verify
+`Test-Path .\OpenSMTP.txt` before running. Reports append to existing files.
 
 ## Notes And Cautions
 
@@ -93,3 +122,7 @@ Successful SMTP acceptance is not always proof of delivered mail. Confirm result
 - Start with a small input file to verify your sender and recipient configuration.
 - Keep delays high enough to avoid generating unnecessary mail volume or triggering rate limits.
 - Review `IP-SMTP-Investigate.txt` and `OpenSMTPLog.txt` manually; not every SMTP server uses the same error wording.
+
+## License
+
+MIT; existing attribution remains in [LICENSE](LICENSE).
