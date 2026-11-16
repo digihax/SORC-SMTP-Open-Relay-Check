@@ -4,13 +4,14 @@ SORC is a focused PowerShell utility for reviewing SMTP relay acceptance on
 servers you are authorized to test. It sends real messages to configured recipients;
 it is not a passive port check.
 
-It reads a list of SMTP server IPs or hostnames, checks whether the target port is reachable, then attempts controlled SMTP sends using internal and external sender/recipient combinations. Results are written to separate output files so findings can be reviewed after the run.
+It reads SMTP server IPs or hostnames, checks the target port, then attempts
+controlled sends using internal and external sender/recipient combinations. Results
+are written to separate files for review.
 
 ## Intended Use
 
-Use this only against systems you own or are explicitly authorized to test.
-
-The script is designed for defensive validation, red-team assessment, and configuration review of known SMTP infrastructure.
+Use SORC for defensive validation, red-team assessments and configuration review
+of SMTP systems you own or are authorized to test.
 
 ## What It Tests
 
@@ -21,7 +22,10 @@ For each server, SORC can test:
 - External sender to internal recipient
 - External sender to external recipient
 
-The most important result is whether an external relay attempt is accepted by the SMTP server and actually reaches the recipient. Some environments accept the SMTP transaction but block delivery later with a gateway, filter, or firewall, so review mailboxes and logs too.
+The important result is whether an external relay attempt is accepted by the SMTP
+server and reaches the recipient. A gateway, filter or firewall may accept the SMTP
+transaction and block delivery later, so review the destination mailbox and server
+logs as well.
 
 ## Requirements
 
@@ -103,8 +107,8 @@ Default two senders times two recipients means four possible sends per reachable
 port. The progress counter tracks planned send combinations, not servers or ETA;
 closed-port combinations are subtracted without sending.
 
-This maintenance pass checks PowerShell syntax and offline input/counting fixtures
-under Windows PowerShell 5.1 and PowerShell 7. No live SMTP messages were sent.
+Offline input and counting fixtures run under Windows PowerShell 5.1 and PowerShell
+7. They do not send SMTP messages.
 
 ```powershell
 powershell -NoProfile -File .\tests\input_fixture.ps1
@@ -118,7 +122,6 @@ or a transient failure. Input-file failure has no explicit fail-fast guard; veri
 
 ## Notes And Cautions
 
-- Do not run this against third-party systems without permission.
 - Start with a small input file to verify your sender and recipient configuration.
 - Keep delays high enough to avoid generating unnecessary mail volume or triggering rate limits.
 - Review `IP-SMTP-Investigate.txt` and `OpenSMTPLog.txt` manually; not every SMTP server uses the same error wording.
